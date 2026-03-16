@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>To Do List ✨</title>
+
+  <!-- Google Fonts: Cormorant Garamond (headings) + Jost (body) -->
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+  <style>
+    /* ===========================
+       CSS VARIABLES & RESET
+    =========================== */
+    :root {
+      --pink:      #ffd6e7;
+      --pink-deep: #f7a8c4;
+      --lavender:  #e8d5f5;
+      --lav-deep:  #c9a8e8;
+      --peach:     #ffe5d0;
+      --peach-deep:#f9c4a0;
+      --blue:      #d0ebff;
+      --blue-deep: #a8d4f5;
+      --mint:      #d4f5e9;
+      --white:     #fffbfe;
+      --text:      #5a4060;
+      --text-soft: #9b7bb0;
+      --shadow:    0 4px 24px rgba(180,120,200,0.13);
+      --radius:    20px;
+      --card-bg:   rgba(255,255,255,0.82);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: linear-gradient(135deg, #fde8f3 0%, #ede4f8 40%, #dceeff 100%);
+      min-height: 100vh;
+      color: var(--text);
+      padding: 24px 16px 60px;
+    }
+
+    /* Subtle animated background blobs */
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      opacity: .18;
+      pointer-events: none;
+      z-index: 0;
+      animation: blobFloat 8s ease-in-out infinite alternate;
+    }
+    body::before {
+      width: 520px; height: 520px;
+      background: radial-gradient(circle, var(--pink-deep), transparent 70%);
+      top: -120px; left: -120px;
+    }
+    body::after {
+      width: 420px; height: 420px;
+      background: radial-gradient(circle, var(--lav-deep), transparent 70%);
+      bottom: -80px; right: -80px;
+      animation-delay: -4s;
+    }
+    @keyframes blobFloat {
+      from { transform: scale(1) translate(0,0); }
+      to   { transform: scale(1.12) translate(20px, 20px); }
+    }
+
+    /* ===========================
+       LAYOUT WRAPPER
+    =========================== */
+    .container {
+      position: relative; z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* ===========================
+       HEADER
+    =========================== */
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: clamp(2.6rem, 6vw, 4.2rem);
+      background: linear-gradient(135deg, #e07faa, #c47dd4, #a06cd5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 4px;
+    }
+    .header p {
+      margin-top: 8px;
+      color: var(--text-soft);
+      font-size: .82rem;
+      font-weight: 300;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+    }
+
+    /* ===========================
+       CARDS
+    =========================== */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px 26px;
+      backdrop-filter: blur(10px);
+      border: 1.5px solid rgba(255,255,255,0.7);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 32px rgba(180,120,200,0.18);
+    }
+
+    .card-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.35rem;
+      font-weight: 400;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    /* ===========================
+       GRID LAYOUT
+    =========================== */
+    .grid-top {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 720px) {
+      .grid-top { grid-template-columns: 1fr; }
+    }
+
+    /* ===========================
+       TASK INPUT AREA
+    =========================== */
+    .task-input-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+    .task-input-row input[type="text"] {
+      flex: 1 1 120px;
+      min-width: 80px;
+      padding: 10px 14px;
+      border-radius: 50px;
+      border: 1.5px solid var(--pink-deep);
+      font-family: 'Jost', sans-serif;
+      font-size: .9rem;
+      font-weight: 600;
+      color: var(--text);
+      background: rgba(255,255,255,0.9);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .task-input-row input[type="text"]:focus {
+      border-color: var(--lav-deep);
+      box-shadow: 0 0 0 3px rgba(169,138,232,0.18);
+    }
+    .task-input-row input[type="date"] {
+      padding: 10px 12px;
+      border-radius: 50px;
+      border: 1.5px solid var(--pink-deep);
+      font-family: 'Jost', sans-serif;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--text);
+      background: rgba(255,255,255,0.9);
+      outline: none;
+      cursor: pointer;
+      transition: border-color .2s;
+    }
+    .task-input-row input[type="date"]:focus {
+      border-color: var(--lav-deep);
+    }
+
+    /* ===========================
+       BUTTONS
+    =========================== */
+    .btn {
+      padding: 10px 18px;
+      border-radius: 50px;
+      border: none;
+      font-family: 'Jost', sans-serif;
+      font-weight: 700;
+      font-size: .88rem;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s, filter .15s;
+      white-space: nowrap;
+    }
+    .btn:hover { transform: scale(1.06); filter: brightness(1.06); }
+    .btn:active { transform: scale(.97); }
+
+    .btn-pink {
+      background: linear-gradient(135deg, #f7a8c4, #e07faa);
+      color: #fff;
+      box-shadow: 0 3px 12px rgba(224,127,170,0.35);
+    }
+    .btn-lav {
+      background: linear-gradient(135deg, #c9a8e8, #a06cd5);
+      color: #fff;
+      box-shadow: 0 3px 12px rgba(160,108,213,0.3);
+    }
+
+    /* ===========================
+       TASK LIST
+    =========================== */
+    .task-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.75);
+      border: 1.5px solid rgba(255,255,255,0.9);
+      box-shadow: 0 2px 8px rgba(180,120,200,0.08);
+      transition: background .2s;
+      animation: slideIn .35s cubic-bezier(.34,1.3,.64,1) both;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-18px) scale(.97); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* Completing animation */
+    .task-item.completing {
+      animation: fadeOut .45s ease forwards;
+    }
+    @keyframes fadeOut {
+      0%   { opacity: 1; transform: scale(1); }
+      60%  { opacity: .2; transform: scale(1.04) rotate(1deg); }
+      100% { opacity: 0; transform: scale(.85) translateX(30px); }
+    }
+
+    /* Custom checkbox */
+    .task-checkbox {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 2.5px solid var(--pink-deep);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background .2s, border-color .2s, transform .15s;
+      position: relative;
+    }
+    .task-checkbox:hover {
+      border-color: var(--lav-deep);
+      transform: scale(1.15);
+    }
+    .task-checkbox:checked {
+      background: linear-gradient(135deg, #f7a8c4, #a06cd5);
+      border-color: transparent;
+    }
+    .task-checkbox:checked::after {
+      content: '✓';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .task-name {
+      flex: 1;
+      font-size: .92rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .task-due {
+      font-size: .75rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: var(--lavender);
+      color: var(--lav-deep);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .task-due.overdue {
+      background: #ffe0e0;
+      color: #d46060;
+    }
+    .task-due.today {
+      background: var(--mint);
+      color: #3aaa7a;
+    }
+
+    .empty-msg {
+      text-align: center;
+      color: var(--text-soft);
+      font-size: .88rem;
+      font-weight: 600;
+      padding: 16px 0 4px;
+      opacity: .7;
+    }
+
+    /* ===========================
+       CALENDAR CARD (full width)
+    =========================== */
+    .calendar-card { margin-bottom: 0; }
+
+    .cal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .cal-header h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: 1.7rem;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #e07faa, #a06cd5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .cal-nav-btn {
+      background: var(--lavender);
+      border: none;
+      border-radius: 50%;
+      width: 38px; height: 38px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      color: var(--lav-deep);
+      transition: background .2s, transform .15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cal-nav-btn:hover { background: var(--lav-deep); color: #fff; transform: scale(1.1); }
+
+    .cal-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+    .cal-weekdays span {
+      text-align: center;
+      font-size: .75rem;
+      font-weight: 700;
+      color: var(--text-soft);
+      padding: 4px 0;
+    }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+
+    .cal-day {
+      min-height: 82px;
+      border-radius: 14px;
+      padding: 6px 7px;
+      background: rgba(255,255,255,0.65);
+      border: 1.5px solid rgba(255,255,255,0.8);
+      cursor: pointer;
+      transition: background .2s, box-shadow .2s, transform .15s;
+      position: relative;
+      overflow: hidden;
+    }
+    .cal-day:hover:not(.empty) {
+      background: var(--pink);
+      transform: scale(1.04);
+      box-shadow: 0 4px 14px rgba(224,127,170,0.2);
+    }
+    .cal-day.today-day {
+      background: linear-gradient(135deg, #ffd6e7, #e8d5f5);
+      border-color: var(--pink-deep);
+    }
+    .cal-day.empty { background: transparent; border-color: transparent; cursor: default; }
+
+    .day-num {
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--text-soft);
+      line-height: 1;
+    }
+    .cal-day.today-day .day-num {
+      color: #a06cd5;
+      font-size: .9rem;
+    }
+
+    .cal-events { margin-top: 4px; display: flex; flex-direction: column; gap: 2px; }
+    .cal-event-chip {
+      font-size: .65rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 20px;
+      background: linear-gradient(90deg, #f7a8c4, #c9a8e8);
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      animation: popIn .2s ease;
+    }
+    @keyframes popIn {
+      from { transform: scale(.7); opacity: 0; }
+      to   { transform: scale(1);  opacity: 1; }
+    }
+
+    /* Event modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(90,40,120,0.22);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 32px 28px;
+      width: min(92vw, 380px);
+      box-shadow: 0 12px 48px rgba(160,108,213,0.3);
+      animation: modalIn .3s cubic-bezier(.34,1.3,.64,1);
+    }
+    @keyframes modalIn {
+      from { transform: scale(.82) translateY(20px); opacity: 0; }
+      to   { transform: none; opacity: 1; }
+    }
+    .modal h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: 1.6rem;
+      letter-spacing: 1.5px;
+      color: var(--lav-deep);
+      margin-bottom: 16px;
+    }
+    .modal input[type="text"] {
+      width: 100%;
+      padding: 11px 16px;
+      border-radius: 50px;
+      border: 1.5px solid var(--lav-deep);
+      font-family: 'Jost', sans-serif;
+      font-size: .92rem;
+      font-weight: 600;
+      color: var(--text);
+      background: var(--lavender);
+      outline: none;
+      margin-bottom: 16px;
+    }
+    .modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
+
+    /* ===========================
+       SECTION ACCENT COLOURS
+    =========================== */
+    /* Academic — blue/mint */
+    #academic-card { border-top: 4px solid var(--blue-deep); }
+    #academic-card .card-title { color: #5ba8e5; }
+    #academic-card .task-input-row input[type="text"],
+    #academic-card .task-input-row input[type="date"] { border-color: var(--blue-deep); }
+    #academic-card .task-checkbox { border-color: var(--blue-deep); }
+    #academic-card .task-checkbox:checked {
+      background: linear-gradient(135deg, var(--blue-deep), #5ba8e5);
+    }
+    #academic-card .btn-add { background: linear-gradient(135deg, #a8d4f5, #5ba8e5); }
+
+    /* Personal — peach/pink */
+    #personal-card { border-top: 4px solid var(--peach-deep); }
+    #personal-card .card-title { color: #e07faa; }
+
+    /* Responsive tweaks for calendar */
+    @media (max-width: 560px) {
+      .cal-day { min-height: 58px; padding: 4px 4px; }
+      .day-num { font-size: .72rem; }
+      .cal-event-chip { font-size: .58rem; padding: 1px 4px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ===== HEADER ===== -->
+  <header class="header">
+    <h1>To Do List ✨</h1>
+    <p>your cute little corner of organisation 🌸</p>
+  </header>
+
+  <!-- ===== TOP GRID: Two Task Sections ===== -->
+  <div class="grid-top">
+
+    <!-- ACADEMIC TASKS CARD -->
+    <div class="card" id="academic-card">
+      <div class="card-title">📚 Academic Tasks</div>
+
+      <!-- Input row -->
+      <div class="task-input-row">
+        <input type="text" id="acad-name" placeholder="New task name…" />
+        <input type="date" id="acad-date" />
+        <button class="btn btn-lav btn-add" onclick="addTask('academic')">＋ Add</button>
+      </div>
+
+      <!-- Task list -->
+      <ul class="task-list" id="academic-list"></ul>
+      <p class="empty-msg" id="academic-empty">No tasks yet — you're crushing it! 💫</p>
+    </div>
+
+    <!-- PERSONAL TASKS CARD -->
+    <div class="card" id="personal-card">
+      <div class="card-title">💗 Personal Tasks</div>
+
+      <!-- Input row -->
+      <div class="task-input-row">
+        <input type="text" id="pers-name" placeholder="New task name…" />
+        <input type="date" id="pers-date" />
+        <button class="btn btn-pink btn-add" onclick="addTask('personal')">＋ Add</button>
+      </div>
+
+      <!-- Task list -->
+      <ul class="task-list" id="personal-list"></ul>
+      <p class="empty-msg" id="personal-empty">No tasks yet — enjoy your free time! 🌷</p>
+    </div>
+
+  </div><!-- /grid-top -->
+
+  <!-- ===== CALENDAR CARD ===== -->
+  <div class="card calendar-card">
+    <div class="cal-header">
+      <button class="cal-nav-btn" onclick="changeMonth(-1)" title="Previous month">‹</button>
+      <h2 id="cal-title"></h2>
+      <button class="cal-nav-btn" onclick="changeMonth(1)" title="Next month">›</button>
+    </div>
+
+    <!-- Weekday labels -->
+    <div class="cal-weekdays">
+      <span>Sun</span><span>Mon</span><span>Tue</span>
+      <span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+    </div>
+
+    <!-- Day grid (filled by JS) -->
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ===== EVENT MODAL ===== -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h3>✨ Add an Event</h3>
+    <p id="modal-date-label" style="font-size:.85rem;color:var(--text-soft);font-weight:600;margin-bottom:14px;"></p>
+    <input type="text" id="modal-event-input" placeholder="What's happening? 🌟" />
+    <div class="modal-btns">
+      <button class="btn" style="background:var(--lavender);color:var(--lav-deep);" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-lav" onclick="saveEvent()">Save 💾</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ============================================================
+   TASK MANAGEMENT
+   ============================================================ */
+
+/** In-memory stores: { id, name, date }[] */
+const tasks = { academic: [], personal: [] };
+let nextId = 1;
+
+/** Add a task to the given section */
+function addTask(section) {
+  const nameEl = document.getElementById(section === 'academic' ? 'acad-name' : 'pers-name');
+  const dateEl = document.getElementById(section === 'academic' ? 'acad-date' : 'pers-date');
+
+  const name = nameEl.value.trim();
+  const date = dateEl.value;
+
+  if (!name) { nameEl.focus(); shake(nameEl); return; }
+
+  tasks[section].push({ id: nextId++, name, date });
+  tasks[section].sort(sortByDate);
+
+  nameEl.value = '';
+  dateEl.value = '';
+  renderTasks(section);
+}
+
+/** Sort comparator: tasks without dates go to the bottom */
+function sortByDate(a, b) {
+  if (!a.date && !b.date) return 0;
+  if (!a.date) return 1;
+  if (!b.date) return -1;
+  return a.date.localeCompare(b.date);
+}
+
+/** Render / refresh a task list */
+function renderTasks(section) {
+  const ul      = document.getElementById(section + '-list');
+  const emptyEl = document.getElementById(section + '-empty');
+  ul.innerHTML  = '';
+
+  if (tasks[section].length === 0) {
+    emptyEl.style.display = 'block';
+    return;
+  }
+  emptyEl.style.display = 'none';
+
+  tasks[section].forEach(task => {
+    const li = document.createElement('li');
+    li.className = 'task-item';
+    li.dataset.id = task.id;
+
+    // Checkbox
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'task-checkbox';
+    cb.addEventListener('change', () => completeTask(section, task.id, li));
+
+    // Task name
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'task-name';
+    nameSpan.textContent = task.name;
+
+    li.appendChild(cb);
+    li.appendChild(nameSpan);
+
+    // Due date chip (if set)
+    if (task.date) {
+      const chip = document.createElement('span');
+      chip.className = 'task-due';
+      chip.textContent = formatDate(task.date);
+      // Colour-code by urgency
+      const today  = todayStr();
+      if (task.date < today)  chip.classList.add('overdue');
+      if (task.date === today) chip.classList.add('today');
+      li.appendChild(chip);
+    }
+
+    ul.appendChild(li);
+  });
+}
+
+/** Mark as done: animate → remove from data → re-render */
+function completeTask(section, id, liEl) {
+  liEl.classList.add('completing');
+  liEl.addEventListener('animationend', () => {
+    tasks[section] = tasks[section].filter(t => t.id !== id);
+    renderTasks(section);
+  }, { once: true });
+}
+
+/** Small shake animation for empty input validation */
+function shake(el) {
+  el.style.animation = 'none';
+  el.style.borderColor = '#f9a0a0';
+  setTimeout(() => { el.style.borderColor = ''; }, 800);
+}
+
+/** Return today as YYYY-MM-DD */
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/** Format YYYY-MM-DD → "Jun 14" */
+function formatDate(str) {
+  const [y, m, d] = str.split('-').map(Number);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[m - 1] + ' ' + d;
+}
+
+// Allow Enter key to submit tasks
+document.getElementById('acad-name').addEventListener('keydown', e => { if (e.key === 'Enter') addTask('academic'); });
+document.getElementById('pers-name').addEventListener('keydown', e => { if (e.key === 'Enter') addTask('personal'); });
+
+// Initial render
+renderTasks('academic');
+renderTasks('personal');
+
+
+/* ============================================================
+   INTERACTIVE CALENDAR
+   ============================================================ */
+
+/** Calendar events stored as { 'YYYY-MM-DD': ['event1', 'event2', ...] } */
+const calEvents = {};
+
+let viewDate   = new Date();  // currently displayed month
+let selectedDay = null;       // 'YYYY-MM-DD' being edited in modal
+
+/** Render the calendar for viewDate's month */
+function renderCalendar() {
+  const year  = viewDate.getFullYear();
+  const month = viewDate.getMonth();   // 0-indexed
+  const today = new Date();
+
+  // Update title
+  document.getElementById('cal-title').textContent =
+    new Date(year, month, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  const grid  = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+
+  // First weekday of the month (0=Sun)
+  const firstDay = new Date(year, month, 1).getDay();
+  // Total days in month
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  // Leading empty cells
+  for (let i = 0; i < firstDay; i++) {
+    const empty = document.createElement('div');
+    empty.className = 'cal-day empty';
+    grid.appendChild(empty);
+  }
+
+  // Day cells
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const cell = document.createElement('div');
+    cell.className = 'cal-day';
+
+    // Highlight today
+    if (year === today.getFullYear() && month === today.getMonth() && d === today.getDate()) {
+      cell.classList.add('today-day');
+    }
+
+    // Day number
+    const num = document.createElement('div');
+    num.className = 'day-num';
+    num.textContent = d;
+    cell.appendChild(num);
+
+    // Events
+    const eventsForDay = calEvents[dateStr] || [];
+    if (eventsForDay.length > 0) {
+      const evContainer = document.createElement('div');
+      evContainer.className = 'cal-events';
+      eventsForDay.forEach(ev => {
+        const chip = document.createElement('div');
+        chip.className = 'cal-event-chip';
+        chip.textContent = ev;
+        evContainer.appendChild(chip);
+      });
+      cell.appendChild(evContainer);
+    }
+
+    // Click to add event
+    cell.addEventListener('click', () => openModal(dateStr, d, month, year));
+    grid.appendChild(cell);
+  }
+}
+
+/** Navigate months */
+function changeMonth(delta) {
+  viewDate.setMonth(viewDate.getMonth() + delta);
+  renderCalendar();
+}
+
+/* -- Modal -- */
+
+function openModal(dateStr, d, month, year) {
+  selectedDay = dateStr;
+  const label = new Date(year, month, d).toLocaleDateString('en-US',
+    { weekday: 'long', month: 'long', day: 'numeric' });
+  document.getElementById('modal-date-label').textContent = '🗓️ ' + label;
+  document.getElementById('modal-event-input').value = '';
+  document.getElementById('modal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('modal-event-input').focus(), 120);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  selectedDay = null;
+}
+
+function saveEvent() {
+  const input = document.getElementById('modal-event-input');
+  const text  = input.value.trim();
+  if (!text) { input.focus(); return; }
+
+  if (!calEvents[selectedDay]) calEvents[selectedDay] = [];
+  calEvents[selectedDay].push(text);
+  closeModal();
+  renderCalendar();
+}
+
+// Close modal on overlay click
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Submit on Enter
+document.getElementById('modal-event-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') saveEvent();
+});
+
+// Initial calendar render
+renderCalendar();
+</script>
+</body>
+</html>
